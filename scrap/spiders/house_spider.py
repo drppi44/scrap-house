@@ -8,7 +8,13 @@ class HouseSpider(Spider):
     name = 'house'
     allowed_domains = ['idealista.com']
     start_urls = [
-        'https://www.idealista.com/alquiler-viviendas/madrid-provincia/',
+        u'https://www.idealista.com/venta-viviendas/',
+        u'https://www.idealista.com/alquiler-viviendas/',
+        u'https://www.idealista.com/alquiler-habitacion/',
+        u'https://www.idealista.com/venta-oficinas/',
+        u'https://www.idealista.com/alquiler-oficinas/',
+        u'https://www.idealista.com/venta-locales/',
+        u'https://www.idealista.com/venta-viviendas/'
     ]
 
     def parse(self, response):
