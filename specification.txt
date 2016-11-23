@@ -1,0 +1,177 @@
+Required DB: MySQL with simplest config as possible (total of 3 tables, one for each site) With fast and efficient framework to apply following steps:
+- The scrape of each site will be separate, and each script can be run at any time (on our side we will set a scheduler to run them)
+- Firstable to do a validation to check if the scraping is possible (in case changes on the site were done)
+will be tried to check some basic details, if it fails then return error (not loading any image for best performance)
+- Scrape the entire list of Listings with its ID and its update/creation date (not loading any image for best performance)
+- Compare that list with the one already existing on the DB.
++ If is same ID with greater date, then needs to be updated
++ If ID is not in DB, needs to be created
++ If ID exists and the update/creation date is less than the last date of run, then ignore - For all the Listings that need to be created or updated:
+- Scrape all its details and update or create it on the DB.
+If Update case, not loading any image for best performance
+
+<<<
+[5:41:57 PM] Yana Trihub: [12:14:41 PM] Project Manager: SCRAPPING SITE: idealista.com
+
+
+1) To scrape through all locations...
+(for example with Residential-Rent case)
+https://www.idealista.com/alquiler-viviendas/[location]-provincia/
+needs to be replaced [location] by each of the options available in the  <ul id="location-combo" class="homecombo" name="locationId" size="8">  from the 3rd "li" element
+[location] to be always lower case and replacing spaces with _ (for example, "Santa Cruz de Tenerife" will be "santa-cruz-de-tenerife")
+
+
+2) Basic rows table structure:
+ - Listing ID
+ - Listing Update/Creation Date
+ - Type: Residential, Commercial
+ - Sub-Type:
+  + for Residential: Apartment, House, Duplex
+  + for Commercial: Office, Retail, Warehouse
+ - Operation: Buy, Rent, Share
+
+
+3) Combination of main selections needed to scrape:
+* Residential:
+ - Comprar + Vivienda - venta-viviendas/
+ - Alquilar + Vivienda - alquiler-viviendas/
+
+* Share:
+ - Compartir + Vivienda - alquiler-habitacion/
+
+* Office:
+ - Comprar + Oficinas - venta-oficinas/
+ - Alquilar + Oficinas - alquiler-oficinas/
+
+* Retail and/or Warehouse:
+ - Comprar + Locales o naves - venta-locales/
+ - Aluilar + Locales o naves - alquiler-locales/
+
+
+4) GENERAL PREREQUISITES:
+ - Firstable to do a validation to check if the scraping is done correctly (in case changes on the site were done)
+  will be tried to check a specific Listing with expected details to compare if there are the same (not loading any image for best performance)
+
+ - Scrape the entire list of Listings with its ID and its update/creation date (not loading any image for best performance)
+   For example for the case of Residential-Rent for the location of Madrid:  https://www.idealista.com/alquiler-viviendas/madrid-provincia/
+
+   NOTE: To check the update/creation date of Listings is hidden somewhere in this page? (we need to avoid to load each Listing details to know this, otherwise it will greatly hit performance)
+         Other option might be to force the site filter of "Fecha de publicación" to be on the time range since the last scrape
+
+
+ -  Compare that list with all Listing IDs with the IDs already existing on the DB.
+  + If is same ID with greater date, then needs to be updated
+  + If ID is not in DB, needs to be created
+  + If ID exists and the update/cration date is less than the last date of run, then ignore
+
+ - For all the Listings that need to be created or updated:
+  - Scrape all its details and update or create it on the DB.
+    If Update case, not loading any image for best performance
+
+
+
+----------------------------
+5) Scraping details inside the Listing page
+
+** From page block of Title + Header
+ - Operation (String)
+  + Sale -- title contains "en venta"
+  + Rent -- title contains "Alquiler"
+  + Share -- title contains "Alquiler de habitación"
+ - Residential Sub-Type (String)
+  + Apartment -- title contains "Piso"
+  + Duplex -- title contains "Dúplex"
+  + House -- title contains "Chalet" or "Casa"
+ - Commercial Sub-Type (String)
+  + Office -- title starts with "Oficina"
+  + Retail -- title starts with "Local"
+  + Warehouse -- title starts with "Nave"
+ - Price (int)
+ - Surface (int)
+ - # of bedrooms (int)
+  + # of bedrooms -- "X hab." (where X is the amount of Bedrooms)
+  + Studio case -- title contains "Estudio"
+ - Security Deposit / Guarantee (String) -- "Fianza"
+ - New Construction -- header contains "Obra nueva"
+
+ ---- For SHARE...
+  - Amount of Residents (int) -- "X chic"
+  - Gender/s (String) -- color of the dot (if double color then is half and half)
+  - Accept Smoker (boolean) -- "Se puede fumar" or "No se puede fumar"
+
+ ---- For RETAIL...
+  -
+
+
+** From page block of Description, search for terms like:
+ - Has Oven (boolean) -- if found term "horno"
+ - Has Washing machine (boolean) -- if found term "lavadora"
+
+
+
+** From page block of "Características básicas"
+ - Furnished (String)
+  + Is furnished -- "Totalmente amueblado y equipado"
+ - # of bathrooms (int) -- for Residential "X wc"
+         -- for Commercial "X aseos o baños"
+ - Status (String)
+  + New / Recently renovated
+  + Good Conditions -- "Segunda mano/buen estado"
+ - Has Cave/Storage (boolean) -- "Trastero"
+ - Orientation (String) -- example "Orientación norte, oeste" or "Orientación este"
+ - Has Terrace (boolean) -- if it has "Terraza" in Características básicas
+ - Parking (boolean) -- "Plaza de garaje incluida"
+
+ ---- For SHARE...
+  - Residents Average Age -- "Ahora son .. entre X y Y años"  (X and Y the range of age)
+  - NOT Pets allowed -- "No se admiten mascotas"
+
+  ** From block of "Buscan" (only Share)
+   - Accepted Gender/s (String) -- "Chica" or "Chico" or "Chico o chica, da igual"
+   - Accepted Occupation/s (String) -- "Estudiante" or "Con trabajo"
+
+ ---- For RETAIL...
+  - Street front (String) -- "Situado a pie de calle"
+  - Street corner (boolean) -- "Hace esquina"
+  - Last Commercial Activity (String) -- "Última actividad: XXXX"  (where XXXX is the last activity)
+
+
+** From page block "Edificio"
+ - Floor (String)
+  + Floor Nr -- in header "Xª planta"
+  + Ground floor -- in header contains "Bajo"
+  + Penthouse -- if title contains "ático"
+ - Elevator (boolean)
+  + Without elevator -- "Sin ascensor"
+ - View (String)
+  + Interior -- in header contains "interior"
+  + Exterior -- in header contains "exterior"
+
+ ---- For RETAIL...
+  - Facade Size (int) -- "Fachada de"
+
+
+** From page block "Equipamiento"
+ - Has Pool (boolean) - "Piscina"
+ - Has Air Conditioner (boolean) -- "Aire acondicionado"
+ - Has Internet (boolean) -- "internet"
+
+ ---- For RETAIL...
+  - Has Cave/Storage -- "Almacén/archivo"
+  - Has Metal Shutter -- "Puerta de seguridad"
+
+
+** Others...
+ - Publication/Update Date (Date) -- "Anuncio actualizado el XXXX"  (where XXXX will be the date)
+ - Location (String) -- coordinates of center point in the map
+ - Precise Location (boolean)
+  + if shows a marker, then it means precise
+  + if shows a circle or area or not a pin, then is NOT precise
+ - Agency or Particular (String)
+  + Agency -- "Profesional"
+  + Particular if else
+ - Foreclosure (boolean) -- if found "Piso de banco" in the contact details on the right
+ - Pictures references
+ - Contact details and external URL
+Above is first site details
+
