@@ -1,13 +1,96 @@
 # -*- coding: utf-8 -*-
-import json
 
 
 def get_id_from_link(link):
     link = link.replace('/', '').replace('inmueble', '')
     return int(link)
 
+variant_urls = [
+    u'https://www.idealista.com/venta-viviendas/',
+    u'https://www.idealista.com/alquiler-viviendas/',
+    u'https://www.idealista.com/alquiler-habitacion/',
+    u'https://www.idealista.com/venta-oficinas/',
+    u'https://www.idealista.com/alquiler-oficinas/',
+    u'https://www.idealista.com/venta-locales/',
+    u'https://www.idealista.com/venta-viviendas/'
+]
 
-def get_variants():
-    core_url = 'https://www.idealista.com/'
-    with open('../../variants.json', 'r') as f:
-        return [core_url+url for url in json.loads(f.read())]
+
+location_urls = [
+    "a-coruna-provincia/",
+    "alava/",
+    "albacete-provincia/",
+    "alicante/",
+    "almeria-provincia/",
+    "andorra-provincia/",
+    "asturias/",
+    "avila-provincia/",
+    "badajoz-provincia/",
+    "balears-illes/",
+    "barcelona-provincia/",
+    "bilbao-vizcaya/",
+    "vizcaya/",
+    "burgos-provincia/",
+    "caceres-provincia/",
+    "cadiz-provincia/",
+    "cantabria/",
+    "castellon/",
+    "cerdanya-francesa/",
+    "ceuta-provincia/",
+    "ciudad-real-provincia/",
+    "cordoba-provincia/",
+    "cuenca-provincia/",
+    "las-palmas/fuerteventura/",
+    "gijon-asturias/",
+    "girona-provincia/",
+    "las-palmas/gran-canaria/",
+    "granada-provincia/",
+    "guadalajara-provincia/",
+    "guipuzcoa/",
+    "huelva-provincia/",
+    "huesca-provincia/",
+    "balears-illes/ibiza/",
+    "jaen-provincia/",
+    "santa-cruz-de-tenerife/la-palma/",
+    "la-rioja/",
+    "las-palmas/lanzarote/",
+    "las-palmas/",
+    "leon-provincia/",
+    "lleida-provincia/",
+    "logrono-la-rioja/",
+    "lugo-provincia/",
+    "madrid-provincia/",
+    "malaga-provincia/",
+    "balears-illes/mallorca/",
+    "melilla-provincia/",
+    "balears-illes/menorca/",
+    "merida-badajoz/",
+    "murcia-provincia/",
+    "navarra/",
+    "ourense-provincia/",
+    "oviedo-asturias/",
+    "pais-vasco-frances/",
+    "palencia-provincia/",
+    "palma-de-mallorca-balears-illes/",
+    "las-palmas-de-gran-canaria-las-palmas/",
+    "pamplonairuna-navarra/",
+    "pontevedra-provincia/",
+    "salamanca-provincia/",
+    "donostia-san-sebastian-guipuzcoa/",
+    "santa-cruz-de-tenerife-provincia/",
+    "santander-cantabria/",
+    "santiago-de-compostela-a-coruna/",
+    "segovia-provincia/",
+    "sevilla-provincia/",
+    "soria-provincia/",
+    "tarragona-provincia/",
+    "santa-cruz-de-tenerife/tenerife/",
+    "teruel-provincia/",
+    "toledo-provincia/",
+    "valencia-provincia/",
+    "valladolid-provincia/",
+    "vitoria-gasteiz-alava/",
+    "vizcaya/",
+    "zamora-provincia/",
+    "zaragoza-provincia/"
+]

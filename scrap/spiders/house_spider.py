@@ -1,21 +1,13 @@
 # -*- coding: utf-8 -*-
 from scrapy import Request
 from scrapy.spiders import Spider
-from .utils import get_id_from_link
+from .utils import get_id_from_link, variant_urls, location_urls
 
 
 class HouseSpider(Spider):
     name = 'house'
     allowed_domains = ['idealista.com']
-    start_urls = [
-        u'https://www.idealista.com/venta-viviendas/',
-        u'https://www.idealista.com/alquiler-viviendas/',
-        u'https://www.idealista.com/alquiler-habitacion/',
-        u'https://www.idealista.com/venta-oficinas/',
-        u'https://www.idealista.com/alquiler-oficinas/',
-        u'https://www.idealista.com/venta-locales/',
-        u'https://www.idealista.com/venta-viviendas/'
-    ]
+    start_urls = variant_urls
 
     def parse(self, response):
         print response.request.url
