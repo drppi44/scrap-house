@@ -3,8 +3,9 @@ import sys
 
 
 if __name__ == "__main__":
-    connection = get_connection()
-    cursor = get_cursor(connection)
-    if 'create_table' in sys.argv:
-        create_table(cursor)
-    connection.close()
+    pass
+    # connection = get_connection()
+    # cursor = get_cursor(connection)
+    # if 'create_table' in sys.argv:
+    #     create_table(cursor)
+    # connection.close()
