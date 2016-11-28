@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from sqlalchemy.orm import sessionmaker
+from elixir import setup_all, create_all
+
 from scrapy import Request
 from scrapy.spiders import Spider
 from .utils import variant_urls, location_urls
@@ -9,6 +12,12 @@ class HouseSpider(Spider):
     name = 'house'
     allowed_domains = ['idealista.com']
     start_urls = variant_urls
+
+    def __init__(self, *args, **kwargs):
+        setup_all()
+        create_all()
+        self.session = sessionmaker()()
+        super(HouseSpider, self).__init__(*args, **kwargs)
 
     def start_requests(self):
         for variant_url in variant_urls:
