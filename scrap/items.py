@@ -90,6 +90,8 @@ class HouseItem(scrapy.Item):
     # Parking (boolean) -- "Plaza de garaje incluida"
     parking = scrapy.Field()
 
+    # --- FOR RETAIL ---
+
     #  - Street front (String) -- "Situado a pie de calle"
     street_front = scrapy.Field()
 
@@ -98,6 +100,56 @@ class HouseItem(scrapy.Item):
 
     # - Last Commercial Activity (String) -- "Última actividad: XXXX"  (where XXXX is the last activity)
     last_commercial_activity = scrapy.Field()
+
+    # - Facade Size (int) -- "Fachada de"
+    facade_size = scrapy.Field()
+
+    # - Has Cave/Storage -- "Almacén/archivo"
+    has_storage = scrapy.Field()
+
+    # - Has Metal Shutter -- "Puerta de seguridad"
+    has_shutter = scrapy.Field()
+
+    # --------------------
+
+    #  - Floor (String)
+    #   + Floor Nr -- in header "Xª planta"
+    #   + Ground floor -- in header contains "Bajo"
+    #   + Penthouse -- if title contains "ático"
+    floor = scrapy.Field()
+
+    # - Elevator (boolean)
+    #   + Without elevator -- "Sin ascensor"
+    has_elevator = scrapy.Field()
+
+    # - View (String)
+    #   + Interior -- in header contains "interior"
+    #   + Exterior -- in header contains "exterior"
+    view = scrapy.Field()
+
+    # - Has Pool (boolean) - "Piscina"
+    has_pool = scrapy.Field()
+
+    # - Has Air Conditioner (boolean) -- "Aire acondicionado"
+    has_air_condition = scrapy.Field()
+
+    # - Has Internet (boolean) -- "internet"
+    has_internet = scrapy.Field()
+
+    location = scrapy.Field()
+    precise = scrapy.Field()
+
+    # - Agency or Particular (String)
+    # + Agency -- "Professional"
+    # + Particular if else
+    agency_type = scrapy.Field()
+
+    # - Foreclosure (boolean) -- if found "Piso de banco" in the contact details on the right
+    foreclosure = scrapy.Field()
+
+    images = scrapy.Field()
+    contact_phone = scrapy.Field()
+    external_link = scrapy.Field()
 
 
 class CategoryItem(scrapy.Item):

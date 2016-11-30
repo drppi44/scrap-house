@@ -2,15 +2,13 @@
 import locale
 from datetime import datetime
 from sqlalchemy.orm import sessionmaker
-from elixir import setup_all, create_all
 
 from scrapy import Request
 from scrapy.spiders import Spider
-from scrapy.utils.response import open_in_browser
 from scrap.items import HouseItem
 
 
-from models import Idealista
+from models import Idealista, db_connect, create_deals_table
 
 
 class IdealistaSpider(Spider):
@@ -21,39 +19,45 @@ class IdealistaSpider(Spider):
 
     OPERATION = {
         u'en venta': 'Sale',
-        u'Alquiler': 'Rent',
-        u'Alquiler de habitación': 'Share'
+        u'alquiler': 'Rent',
+        u'alquiler de habitación': 'Share'
     }
 
     RESIDENTIAL_SUB_TYPE = {
-        u"Piso": 'Apartment',
-        u"Dúplex": 'Duplex',
-        u"Chalet": 'House',
-        u"Casa": 'House'
+        u"piso": 'Apartment',
+        u"dúplex": 'Duplex',
+        u"chalet": 'House',
+        u"casa": 'House'
     }
 
     COMMERCIAL_SUB_TYPE = {
-        u"Oficina": 'Office',
-        u"Local": 'Retail',
-        u"Nave": 'Warehouse'
+        u"oficina": 'Office',
+        u"local": 'Retail',
+        u"nave": 'Warehouse'
+    }
+
+    FLOOR = {
+        u'planta': 'Floor',
+        u'Bajo': 'Ground floor',
+        u'ático': 'Penthouse'
     }
 
     def __init__(self, *args, **kwargs):
-        setup_all()
-        create_all()
-        self.session = sessionmaker()()
-        self.listings = self.session.query(Idealista).all()
+        engine = db_connect()
+        create_deals_table(engine)
+        session = sessionmaker(bind=engine)()
+        self.listings = session.query(Idealista).all()
+        session.close()
         locale.setlocale(locale.LC_TIME, "es_ES")
         super(IdealistaSpider, self).__init__(*args, **kwargs)
 
     def start_requests(self):
-        # for listing in self.listings[0:2]:
-        #     yield Request(url=self.BASE_URL.format(id=listing.id), meta={'listing': listing})
-        yield Request(url=self.BASE_URL.format(id=31653895))
+        for listing in self.listings:
+            yield Request(url=self.BASE_URL.format(id=listing.id), meta={'listing': listing})
+        # yield Request(url=self.BASE_URL.format(id=31653895))
 
     def parse(self, response):
         item = HouseItem()
-        # open_in_browser(response)
         current_listing = response.meta.get('listing', None)
 
         date_of_last_update = response.xpath(
@@ -69,7 +73,7 @@ class IdealistaSpider(Spider):
             #     return
             item['update_date'] = date_of_last_update
 
-        title = response.xpath('//section[@class="main-info"]/h1/span/text()')[0].extract()
+        title = response.xpath('//section[@class="main-info"]/h1/span/text()')[0].extract().lower()
         for key, operation in self.OPERATION.items():
             if key in title:
                 item['operation'] = operation
@@ -87,13 +91,13 @@ class IdealistaSpider(Spider):
 
         surface = response.xpath('//div[@class="info-data"]/span[2]/span/text()').extract()
         item['surface'] = int(surface[0]) if surface else 0
-
-        if u'Estudio' in title:
-            bedrooms = 0
-        else:
-            bedrooms = response.xpath('//div[@class="info-data"]/span[3]/span/text()').extract()
-            bedrooms = int(bedrooms[0]) if bedrooms else 0
-        item['bedrooms'] = bedrooms
+        if 'commercial_sub_type' not in item.keys():
+            if u'Estudio' in title:
+                bedrooms = 0
+            else:
+                bedrooms = response.xpath('//div[@class="info-data"]/span[3]/span/text()').extract()
+                bedrooms = int(bedrooms[0]) if bedrooms else 0
+            item['bedrooms'] = bedrooms
 
         security_deposit = response.xpath('//span[@class="txt-deposit"]/span/text()').re("Fianza de (.*)")
         item['security_deposit'] = security_deposit[0] if security_deposit else ''
@@ -167,13 +171,81 @@ class IdealistaSpider(Spider):
             street_front = response.xpath(
                 '//section[@id="details"]/div/ul/li/text()[contains(., "Situado a pie de calle")]'
             )
+            item['street_front'] = street_front[0].extract() if street_front else ''
 
-            item['street_front'] = street_front
+            street_corner = response.xpath(
+                '//section[@id="details"]/div/ul/li/text()[contains(., "Hace esquina")]'
+            )
+            item['street_corner'] = True if street_corner else False
 
+            last_commercial_activity = response.xpath(
+                '//section[@id="details"]/div/ul/li/text()[contains(., "ltima actividad")]'
+            )
+            item['last_commercial_activity'] = last_commercial_activity[0].extract() if last_commercial_activity else ''
 
+            facade_size = details.re("Fachada de (\d+)")
+            item['facade_size'] = int(facade_size[0]) if facade_size else 0
 
+            has_storage = response.xpath(
+                '//section[@id="details"]/div/ul/li/text()[contains(., "archivo")]'
+            )
+            item['has_storage'] = True if has_storage else False
 
+            has_shutter = response.xpath(
+                '//section[@id="details"]/div/ul/li/text()[contains(., "Puerta de seguridad")]'
+            )
+            item['has_shutter'] = True if has_shutter else False
 
+        for key, floor in self.FLOOR.items():
+            planta = response.xpath(
+                '//section[@id="details"]/div/ul/li/text()[contains(., translate("'+key+'", "p", "P"))]'
+            ).extract()
+            if planta and 'planta' in planta[0].lower():
+                item['floor'] = planta[0]
+            elif planta:
+                item['floor'] = floor
+
+        if u'ático' in title:
+            item['floor'] = self.FLOOR[u'ático']
+
+        has_elevator = response.xpath('//section[@id="details"]/div/ul/li/text()[contains(.,"Sin ascensor")]').extract()
+        item['has_elevator'] = False if has_elevator else True
+
+        view = response.xpath('//section[@id="details"]/div/ul/li/text()[contains(.,"exterior")]').extract()
+        item['view'] = 'Exterior' if view else 'Interior'
+
+        has_pool = response.xpath('//section[@id="details"]/div/ul/li/text()[contains(.,"Piscina")]').extract()
+        item['has_pool'] = True if has_pool else False
+
+        has_air_condition = response.xpath(
+            '//section[@id="details"]/div/ul/li/text()[contains(.,"Aire acondicionado")]'
+        ).extract()
+        item['has_air_condition'] = True if has_air_condition else False
+
+        has_internet = response.xpath(
+            '//section[@id="details"]/div/ul/li/text()[contains(.,"internet")]'
+        ).extract()
+        item['has_internet'] = True if has_internet else False
+
+        location = " ".join(response.xpath('//div[@id="addressPromo"]/ul/li/text()').extract())
+        item['location'] = location.strip()
+
+        precise = response.xpath('//a[contains(@class, "icon-location")]')
+        item['precise'] = True if precise else False
+
+        agency_type = response.xpath('//div[contains(@class, "advertiser-data")]/p/text()[contains(., "Profesional")]')
+        item['agency_type'] = 'Professional' if agency_type else 'Particular'
+
+        images = response.xpath('//img/@data-service').extract()
+        item['images'] = []
+        for img in images:
+            item['images'].append(img.split(',')[0])
+
+        contact_phone = response.xpath('//div[@class="contact-phones"]/div/p/text()').extract()
+        item['contact_phone'] = contact_phone[0].strip() if contact_phone else ''
+
+        external_link = response.xpath('//a[@id="linkAdicional"]/@href').extract()
+        item['external_link'] = external_link[0] if external_link else ''
 
         yield item
 
