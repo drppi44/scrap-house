@@ -1,5 +1,6 @@
 from sqlalchemy.engine.url import URL
-from sqlalchemy import create_engine, Column, Integer, String, Date, Text, Boolean
+from sqlalchemy import (create_engine, Column, Integer, String, Date, Text,
+                        Boolean)
 from sqlalchemy.ext.declarative import declarative_base
 
 import scrap.settings as settings
@@ -65,4 +66,3 @@ class Idealista(DeclarativeBase):
     contact_phone = Column(String(50), nullable=True)
     external_link = Column(String(500), nullable=True)
     images = Column(Text, nullable=True)
-

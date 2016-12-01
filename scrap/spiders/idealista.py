@@ -6,8 +6,6 @@ from sqlalchemy.orm import sessionmaker
 from scrapy import Request
 from scrapy.spiders import Spider
 from scrap.items import HouseItem
-
-
 from models import Idealista, db_connect, create_deals_table
 
 
@@ -237,7 +235,7 @@ class IdealistaSpider(Spider):
         item['agency_type'] = 'Professional' if agency_type else 'Particular'
 
         images = response.xpath('//img/@data-service').extract()
-        item['images'] = []
+        item['images'] = [img.split(',')[0] for img in images]
         for img in images:
             item['images'].append(img.split(',')[0])
 
@@ -248,4 +246,3 @@ class IdealistaSpider(Spider):
         item['external_link'] = external_link[0] if external_link else ''
 
         yield item
-

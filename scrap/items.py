@@ -45,11 +45,13 @@ class HouseItem(scrapy.Item):
     # --- For SHARE ---
     amount_of_residents = scrapy.Field()
 
-    # - Accepted Gender / s(String) - - "Chica" or "Chico" or "Chico o chica, da igual"
+    # - Accepted Gender / s(String) - - "Chica" or "Chico" or "Chico o chica,
+    #  da igual"
     gender = scrapy.Field()
     accept_smoke = scrapy.Field()
 
-    # - Residents Average Age -- "Ahora son .. entre X y Y años"  (X and Y the range of age)
+    # - Residents Average Age -- "Ahora son .. entre X y Y años"  (X and Y the
+    #  range of age)
     average_age = scrapy.Field()
 
     # - Accepted Occupation/s (String) -- "Estudiante" or "Con trabajo"
@@ -81,7 +83,8 @@ class HouseItem(scrapy.Item):
     # - Has Cave/Storage (boolean) -- "Trastero"
     has_cave = scrapy.Field()
 
-    # - Orientation (String) -- example "Orientación norte, oeste" or "Orientación este"
+    # - Orientation (String) -- example "Orientación norte, oeste" or
+    #  "Orientación este"
     orientation = scrapy.Field()
 
     # Has Terrace (boolean) -- if it has "Terraza" in Características básicas
@@ -98,7 +101,8 @@ class HouseItem(scrapy.Item):
     # - Street corner (boolean) -- "Hace esquina"
     street_corner = scrapy.Field()
 
-    # - Last Commercial Activity (String) -- "Última actividad: XXXX"  (where XXXX is the last activity)
+    # - Last Commercial Activity (String) -- "Última actividad: XXXX"
+    #  (where XXXX is the last activity)
     last_commercial_activity = scrapy.Field()
 
     # - Facade Size (int) -- "Fachada de"
@@ -144,7 +148,8 @@ class HouseItem(scrapy.Item):
     # + Particular if else
     agency_type = scrapy.Field()
 
-    # - Foreclosure (boolean) -- if found "Piso de banco" in the contact details on the right
+    # - Foreclosure (boolean) -- if found "Piso de banco" in the contact
+    # details on the right
     foreclosure = scrapy.Field()
 
     images = scrapy.Field()
